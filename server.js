@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -26,9 +24,12 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   try {
     const vectorizedImageBuffer = await vectorizeImage(req.file.buffer);
 
-    const outputDir = path.join(__dirname, 'icons');
+    // ✨ Updated output directory to /tmp/icons
+    const outputDir = path.join('/tmp', 'icons');
+
+    // Create /tmp/icons if it doesn't exist
     if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
+      fs.mkdirSync(outputDir, { recursive: true });
     }
 
     const outputFile = path.join(outputDir, `icon_${Date.now()}.svg`);
@@ -48,11 +49,11 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
 });
 
 // Serve icons
-app.use('/icons', express.static(path.join(__dirname, 'icons')));
+app.use('/icons', express.static(path.join('/tmp', 'icons')));
 
 // DELETE /clear-icons
 app.delete('/clear-icons', (req, res) => {
-  const iconsDir = path.join(__dirname, 'icons');
+  const iconsDir = path.join('/tmp', 'icons');
 
   if (!fs.existsSync(iconsDir)) {
     return res.status(400).json({ error: 'Icons directory does not exist' });
@@ -85,5 +86,5 @@ app.get("/test", (req, res) => {
   res.send(`Vectorizer server working!`);
 });
 
-// 👇👇 Export as a handler for Vercel
+// 👇 Export app for Vercel
 module.exports = app;
