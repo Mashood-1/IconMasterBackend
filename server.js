@@ -1,4 +1,4 @@
-// server/vectorizer.js
+// server.js
 
 const express = require('express');
 const multer = require('multer');
@@ -7,17 +7,15 @@ const path = require('path');
 const fs = require('fs');
 const { vectorizeImage } = require('./vectorizeImage');
 
-// Create an Express app
 const app = express();
-const port = process.env.PORT || 3001; // Vercel gives dynamic ports, so use process.env.PORT
 
-// Allow CORS so that Expo app can connect
+// Allow CORS
 app.use(cors());
 
-// Set up multer for file uploads (storage in memory)
+// Set up multer
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Handle POST request to /vectorize
+// POST /vectorize
 app.post('/vectorize', upload.single('image'), async (req, res) => {
   console.log('Received image data:', req.file);
 
@@ -36,9 +34,8 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     const outputFile = path.join(outputDir, `icon_${Date.now()}.svg`);
     fs.writeFileSync(outputFile, vectorizedImageBuffer);
 
-    // Dynamically generate URL
-    const protocol = req.protocol;
-    const host = req.get('host');
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers.host;
     const iconUri = `${protocol}://${host}/icons/${path.basename(outputFile)}`;
 
     console.log('Generated icon URI:', iconUri);
@@ -50,10 +47,10 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   }
 });
 
-// Serve the generated icons
+// Serve icons
 app.use('/icons', express.static(path.join(__dirname, 'icons')));
 
-// Handle DELETE request to clear all icons
+// DELETE /clear-icons
 app.delete('/clear-icons', (req, res) => {
   const iconsDir = path.join(__dirname, 'icons');
 
@@ -83,11 +80,10 @@ app.delete('/clear-icons', (req, res) => {
   });
 });
 
-app.get("/test", () => {
-  console.log(`Vectorizer server running on port ${port}`);
-})
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Vectorizer server running on port ${port}`);
+// Test route
+app.get("/test", (req, res) => {
+  res.send(`Vectorizer server working!`);
 });
+
+// 👇👇 Export as a handler for Vercel
+module.exports = app;
