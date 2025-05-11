@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "vectorizer.js",
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "vectorizer.js"
+      "dest": "server.js"
     }
   ]
 }
