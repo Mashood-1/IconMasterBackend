@@ -83,6 +83,10 @@ app.delete('/clear-icons', (req, res) => {
   });
 });
 
+app.get("/test", () => {
+  console.log(`Vectorizer server running on port ${port}`);
+})
+
 // Start the server
 app.listen(port, () => {
   console.log(`Vectorizer server running on port ${port}`);
